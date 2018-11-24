@@ -1,7 +1,42 @@
 import React, { Component } from 'react';
 
 class App extends Component {
-  state = { input: '', responses: [] };
+  state = { input: '', responses: [], urls: [] };
+
+  updateUrls() {
+    fetch(`api/shorturl/list`).then(response =>
+      response.json().then(res => {
+        if (res.loading) {
+          console.log('list: LOADING');
+          setTimeout(() => this.updateUrls(), 500);
+        } else {
+          this.setState({ urls: res });
+        }
+      })
+    );
+  }
+
+  addUrl() {
+    fetch(`api/shorturl/new`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8'
+      },
+      body: JSON.stringify({ original_url: this.state.input })
+    }).then(response =>
+      response.json().then(data =>
+        this.setState(
+          {
+            input: '',
+            responses: [JSON.stringify(data), ...this.state.responses]
+          },
+          this.updateUrls
+        )
+      )
+    );
+  }
+
+  // Handlers
 
   handleInputChange = event => {
     this.setState({ input: event.target.value });
@@ -9,26 +44,24 @@ class App extends Component {
 
   handleFormSubmit = event => {
     event.preventDefault();
-
-    fetch(`api/${this.state.input}`).then(response =>
-      response.json().then(data =>
-        this.setState({
-          input: '',
-          responses: [JSON.stringify(data), ...this.state.responses]
-        })
-      )
-    );
+    this.addUrl();
   };
 
   handleClear = () => {
     this.setState({ input: '', responses: [] });
   };
 
+  // Lifecycle Methods
+
+  componentDidMount() {
+    this.updateUrls();
+  }
+
   render() {
     return (
       <div className="app">
         <main>
-          <h1 className="masthead">Microservice Boilerplate</h1>
+          <h1 className="masthead">URL Shortener Microservice</h1>
 
           <div className="container">
             <div className="card">
@@ -50,12 +83,12 @@ class App extends Component {
 
               <form onSubmit={this.handleFormSubmit}>
                 <code className="response">
-                  <label htmlFor="input">
-                    <span>GET /api/</span>
+                  <label htmlFor="original_url">
+                    <span>POST /api/shorturl/new</span>
                     <input
                       type="text"
                       placeholder=""
-                      id="input"
+                      id="original_url"
                       value={this.state.input}
                       onChange={this.handleInputChange}
                     />
@@ -77,11 +110,24 @@ class App extends Component {
 
             {this.state.responses.length > 0 ? (
               <div className="card">
-                <h2 className="masthead">Output</h2>
+                <h2 className="masthead">Responses</h2>
                 <div className="responses">
                   {this.state.responses.map((response, i) => (
                     <code className="response" key={i}>
                       {response}
+                    </code>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {this.state.urls.length > 0 ? (
+              <div className="card">
+                <h2 className="masthead">URLs</h2>
+                <div className="responses">
+                  {this.state.urls.map((url, i) => (
+                    <code className="response" key={url._id}>
+                      <span>{JSON.stringify(url)}</span>
                     </code>
                   ))}
                 </div>

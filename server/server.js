@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import bodyParser from 'body-parser';
+import mongoose from 'mongoose';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 
@@ -9,6 +11,31 @@ const app = express();
 
 app.use(cors({ optionSuccessStatus: 200 }));
 app.use(express.static('.build/public'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+mongoose.connect('mongodb://localhost:27017/fcc-urlshortener');
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error: '));
+let Url;
+db.once('open', () => {
+  console.log('Connected');
+
+  const urlSchema = new mongoose.Schema({
+    original_url: String,
+    short_url: Number
+  });
+
+  try {
+    console.log('Trying to load model.');
+    Url = mongoose.model('Url');
+    console.log('Model loaded.');
+  } catch (error) {
+    console.log('Model not found.');
+    Url = mongoose.model('Url', urlSchema);
+    console.log('Model created.');
+  }
+});
 
 app.get('/', function(req, res) {
   const script =
@@ -37,10 +64,35 @@ app.get('/', function(req, res) {
   res.send(html);
 });
 
-app.get('/api/:input?', function(req, res) {
-  const { input } = req.params;
+app.get('/api/shorturl/list', (req, res) => {
+  if (!Url) {
+    res.json({ loading: true });
+    return;
+  }
 
-  res.json({ ...(input ? { input } : {}), end: 'back' });
+  Url.find((err, urls) => {
+    res.json(urls);
+  });
+});
+
+app.post('/api/shorturl/new', function(req, res) {
+  if (!Url) {
+    res.json({ loading: true });
+    return;
+  }
+
+  const data = { ...req.body, short_url: 1 };
+
+  const newUrl = new Url(data);
+  newUrl
+    .save()
+    .then(item => {
+      console.log(item);
+      res.json({ success: true });
+    })
+    .catch(err => {
+      res.status(400).json({ success: false });
+    });
 });
 
 export default app;
