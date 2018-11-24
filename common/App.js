@@ -68,18 +68,46 @@ class App extends Component {
               <h2 className="masthead">User Stories</h2>
               <ol>
                 <li>
-                  The API endpoint is <code>GET /api/:input? </code>
+                  I can POST a URL to <code>/api/shorturl/new</code> and I will
+                  receive a shortened URL in the JSON response.
+                  <br />
+                  Example :{' '}
+                  <code>{`{"original_url": "www.google.com", "short_url": 1}`}</code>
+                </li>
+
+                <li>
+                  If I pass an invalid URL that doesn't follow the{' '}
+                  <code>http(s)://www.example.com/etc</code> format, the JSON
+                  response will contain an error like{' '}
+                  <code>{`{"error": "invalid URL"}`}</code>.
+                  <br />
+                  HINT: to be sure that the submitted url points to a valid site
+                  you can use the function <code>
+                    dns.lookup(host, cb)
+                  </code>{' '}
+                  from the dns core module.
+                </li>
+
+                <li>
+                  When I visit the shortened URL, it will redirect me to my
+                  original link.
                 </li>
               </ol>
 
               <h2 className="masthead">Example Usage</h2>
-              <code className="response">GET /api/hello_world</code>
+              <code className="response">
+                POST /api/shorturl/new <code>https://www.google.com</code>
+              </code>
               <h2 className="masthead">Example Output</h2>
-              <code className="response">{`{"input":"hello_world", "end":"back"}`}</code>
+              <code className="response">{`{"original_url": "www.google.com", "short_url": 1}`}</code>
+              <p>
+                Visiting <code>/api/shorturl/1</code> would then redirect to{' '}
+                <code>https://www.google.com</code>
+              </p>
             </div>
 
             <div className="card">
-              <h2 className="masthead">Parse Input</h2>
+              <h2 className="masthead">Generate Short URL</h2>
 
               <form onSubmit={this.handleFormSubmit}>
                 <code className="response">
@@ -97,10 +125,14 @@ class App extends Component {
 
                 <div className="buttons">
                   <div>
-                    <button>Submit</button>
+                    <input type="submit" className="button" value="Submit" />
                   </div>
                   <div>
-                    <button type="button" onClick={this.handleClear}>
+                    <button
+                      type="button"
+                      className="button"
+                      onClick={this.handleClear}
+                    >
                       Clear
                     </button>
                   </div>
@@ -122,13 +154,47 @@ class App extends Component {
             ) : null}
 
             {this.state.urls.length > 0 ? (
-              <div className="card">
+              <div className="mbx">
                 <h2 className="masthead">URLs</h2>
-                <div className="responses">
+                <div className="urls">
                   {this.state.urls.map((url, i) => (
-                    <code className="response" key={url._id}>
-                      <span>{JSON.stringify(url)}</span>
-                    </code>
+                    <div className="url card" key={url._id}>
+                      <div className="url-inner">
+                        <div className="bbx">
+                          <div className="gbx">
+                            <strong>Original URL</strong>
+                          </div>
+                          <div className="url-link">{url.original_url}</div>
+                        </div>
+                        <div className="bbx">
+                          <div className="">
+                            <strong>Short URL</strong>
+                          </div>
+                          <div className="url-link">
+                            /api/shorturl/{url.short_url}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="buttons">
+                        <div>
+                          <a
+                            href={`api/shorturl/${url.short_url}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="button"
+                          >
+                            Visit
+                          </a>
+                        </div>
+                        <div>
+                          <button className="button">Copy</button>
+                        </div>
+                        <div>
+                          <button className="button btn-delete">Delete</button>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>

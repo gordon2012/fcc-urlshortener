@@ -53,7 +53,7 @@ code {
   }
   .response input {
     margin-top: 0;
-    margin-left: 0.25em;
+    margin-left: 0.5em;
   }
 }
 
@@ -85,17 +85,32 @@ main {
   padding: 1em;
   margin-bottom: 1em;
 }
+.card > *:first-child {
+  margin-top: 0 !important;
+}
+.card > *:last-child {
+  margin-bottom: 0 !important;
+}
 
-button {
+.button {
   font-family: 'Lato', 'Helvetica', 'Arial', sans-serif;
-  padding: 1em 2em;
+  font-weight: bold;
+  font-size: 1em;
+  padding: 0.75em 1em;
   border: none;
   color: white;
   cursor: pointer;
   background: #7b1fa2;
 }
-button:hover {
+.button:hover {
   background: #4a148c;
+}
+
+.button.btn-delete {
+  background: #d32f2f;
+}
+.button.btn-delete:hover {
+  background: #b71c1c;
 }
 
 /* Sections */
@@ -109,10 +124,13 @@ button:hover {
 .buttons > div:last-child {
   margin-bottom: 0;
 }
-.buttons button {
+.buttons .button {
+  display: block;
+  text-align: center;
+  text-decoration: none;
   width: 100%;
 }
-@media (min-width: 350px) {
+@media (min-width: 400px) {
   .buttons {
     flex-direction: row;
     justify-content: space-between;
@@ -133,4 +151,42 @@ footer {
   padding: 1em 0;
   text-align: center;
   font-family: 'Lato', 'Helvetica', 'Arial', sans-serif;
+}
+
+/* Url */
+.url {
+  font-family: 'Lato', 'Helvetica', 'Arial', sans-serif;
+}
+.url-inner {
+  display: flex;
+  flex-direction: column;
+}
+.url-link {
+  padding-top: 0.25em;
+  font-family: 'Fira Code', 'Fira Mono', monospace;
+  word-wrap: break-word;
+}
+.url-inner > div {
+  margin: 0.5em 0;
+  border: 1px solid #0d47a1;
+  background: #e3f2fd;
+  padding: 0.25em 0.5em;
+}
+@media (min-width: 600px) {
+  .url-inner {
+    flex-direction: row;
+  }
+  .url-inner > div {
+    flex: 1;
+    margin: 0;
+  }
+  .url-inner > div:first-child {
+    margin-right: 0.25em;
+  }
+  .url-inner > div:last-child {
+    margin-left: 0.25em;
+  }
+}
+.url .buttons {
+  margin-top: 1em;
 }
