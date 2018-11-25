@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/gordon2012/fcc-urlshortener#readme",
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
     "babel-preset-react": "^6.24.1",
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",

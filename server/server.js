@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
+import dns from 'dns';
+import 'babel-polyfill';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 
@@ -75,44 +77,70 @@ app.get('/api/shorturl/list', (req, res) => {
   });
 });
 
-app.post('/api/shorturl/new', function(req, res) {
+app.post('/api/shorturl/new', async function(req, res) {
   if (!Url) {
     res.json({ loading: true });
     return;
   }
 
-  const validUrl = url =>
-    typeof url === 'string' &&
-    !!url.match(
-      /^(?:http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/g
-    );
+  const { original_url: url } = req.body;
 
-  const { original_url } = req.body;
-
-  if (validUrl(original_url)) {
-    Url.findOne()
-      .sort('-short_url')
-      .exec((err, doc) => {
-        // Get the next increment, or 1 if empty
-        const next = doc ? doc.short_url + 1 : 1;
-
-        const newUrl = new Url({
-          original_url,
-          short_url: next
-        });
-        newUrl
-          .save()
-          .then(item => {
-            console.log(item);
-            res.json({ success: true });
-          })
-          .catch(err => {
-            res.status(400).json({ success: false });
-          });
-      });
-  } else {
+  // URL must exist and be a string
+  if (typeof url !== 'string') {
+    console.log(`Invalid URL: Missing or not a string`);
     res.json({ error: 'Invalid URL' });
+    return;
   }
+
+  // URL must pass regex check
+  if (
+    !url.match(
+      /^(?:http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/g
+    )
+  ) {
+    console.log(`Invalid URL: Fails regex check`);
+    res.json({ error: 'Invalid URL' });
+    return;
+  }
+
+  // URL must dns resolve
+  try {
+    await (url => {
+      return new Promise((resolve, reject) => {
+        dns.resolve4(url, (err, addr) => {
+          if (err !== null) {
+            reject(err);
+          } else {
+            resolve(addr);
+          }
+        });
+      });
+    })(url.split(url.match(/^(?:http(s)?:\/\/)/g))[1]);
+  } catch (err) {
+    console.log(`Invalid URL: DNS lookup fail: ${JSON.stringify(err)}`);
+    res.json({ error: 'Invalid URL' });
+    return;
+  }
+
+  Url.findOne()
+    .sort('-short_url')
+    .exec((err, doc) => {
+      // Get the next increment, or 1 if empty
+      const next = doc ? doc.short_url + 1 : 1;
+
+      const newUrl = new Url({
+        original_url: url,
+        short_url: next
+      });
+      newUrl
+        .save()
+        .then(item => {
+          res.json({ success: true });
+        })
+        .catch(err => {
+          res.status(400).json({ success: false });
+        });
+    });
 });
 
 export default app;
