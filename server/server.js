@@ -81,18 +81,38 @@ app.post('/api/shorturl/new', function(req, res) {
     return;
   }
 
-  const data = { ...req.body, short_url: 1 };
+  const validUrl = url =>
+    typeof url === 'string' &&
+    !!url.match(
+      /^(?:http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/g
+    );
 
-  const newUrl = new Url(data);
-  newUrl
-    .save()
-    .then(item => {
-      console.log(item);
-      res.json({ success: true });
-    })
-    .catch(err => {
-      res.status(400).json({ success: false });
-    });
+  const { original_url } = req.body;
+
+  if (validUrl(original_url)) {
+    Url.findOne()
+      .sort('-short_url')
+      .exec((err, doc) => {
+        // Get the next increment, or 1 if empty
+        const next = doc ? doc.short_url + 1 : 1;
+
+        const newUrl = new Url({
+          original_url,
+          short_url: next
+        });
+        newUrl
+          .save()
+          .then(item => {
+            console.log(item);
+            res.json({ success: true });
+          })
+          .catch(err => {
+            res.status(400).json({ success: false });
+          });
+      });
+  } else {
+    res.json({ error: 'Invalid URL' });
+  }
 });
 
 export default app;
