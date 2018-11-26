@@ -143,4 +143,22 @@ app.post('/api/shorturl/new', async function(req, res) {
     });
 });
 
+app.delete('/api/shorturl/delete/:id', async function(req, res) {
+  if (!Url) {
+    res.json({ loading: true });
+    return;
+  }
+
+  const { id } = req.params;
+
+  Url.findOneAndDelete({ _id: id }, (err, doc) => {
+    if (err) {
+      console.log({ error: JSON.stringify(err) });
+      res.json({ error: JSON.stringify(err) });
+      return;
+    }
+    res.json({ deleted: doc });
+  });
+});
+
 export default app;

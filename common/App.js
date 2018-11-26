@@ -36,6 +36,22 @@ class App extends Component {
     );
   }
 
+  deleteUrl(id) {
+    fetch(`api/shorturl/delete/${id}`, {
+      method: 'DELETE'
+    }).then(response =>
+      response.json().then(data =>
+        this.setState(
+          {
+            input: '',
+            responses: [JSON.stringify(data), ...this.state.responses]
+          },
+          this.updateUrls
+        )
+      )
+    );
+  }
+
   // Handlers
 
   handleInputChange = event => {
@@ -49,6 +65,10 @@ class App extends Component {
 
   handleClear = () => {
     this.setState({ input: '', responses: [] });
+  };
+
+  handleDelete = event => {
+    this.deleteUrl(event.target.dataset.id);
   };
 
   // Lifecycle Methods
@@ -191,7 +211,13 @@ class App extends Component {
                           <button className="button">Copy</button>
                         </div>
                         <div>
-                          <button className="button btn-delete">Delete</button>
+                          <button
+                            onClick={this.handleDelete}
+                            data-id={url._id}
+                            className="button btn-delete"
+                          >
+                            Delete
+                          </button>
                         </div>
                       </div>
                     </div>
