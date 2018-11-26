@@ -28,7 +28,7 @@ class App extends Component {
         this.setState(
           {
             input: '',
-            responses: [JSON.stringify(data), ...this.state.responses]
+            responses: [...this.state.responses, JSON.stringify(data)]
           },
           this.updateUrls
         )
@@ -44,7 +44,7 @@ class App extends Component {
         this.setState(
           {
             input: '',
-            responses: [JSON.stringify(data), ...this.state.responses]
+            responses: [...this.state.responses, JSON.stringify(data)]
           },
           this.updateUrls
         )
@@ -92,14 +92,14 @@ class App extends Component {
                   receive a shortened URL in the JSON response.
                   <br />
                   Example :{' '}
-                  <code>{`{"original_url": "www.google.com", "short_url": 1}`}</code>
+                  <code>{`{"original_url":"www.google.com","short_url":1}`}</code>
                 </li>
 
                 <li>
                   If I pass an invalid URL that doesn't follow the{' '}
                   <code>http(s)://www.example.com/etc</code> format, the JSON
                   response will contain an error like{' '}
-                  <code>{`{"error": "invalid URL"}`}</code>.
+                  <code>{`{"error":"invalid URL"}`}</code>.
                   <br />
                   HINT: to be sure that the submitted url points to a valid site
                   you can use the function <code>
@@ -119,12 +119,25 @@ class App extends Component {
                 POST /api/shorturl/new <code>https://www.google.com</code>
               </code>
               <h2 className="masthead">Example Output</h2>
-              <code className="response">{`{"original_url": "www.google.com", "short_url": 1}`}</code>
+              <code className="response">{`{"original_url":"www.google.com","short_url": 1}`}</code>
               <p>
                 Visiting <code>/api/shorturl/1</code> would then redirect to{' '}
                 <code>https://www.google.com</code>
               </p>
             </div>
+
+            {this.state.responses.length > 0 ? (
+              <div className="card">
+                <h2 className="masthead">Responses</h2>
+                <div className="responses">
+                  {this.state.responses.map((response, i) => (
+                    <code className="response" key={i}>
+                      {response}
+                    </code>
+                  ))}
+                </div>
+              </div>
+            ) : null}
 
             <div className="card">
               <h2 className="masthead">Generate Short URL</h2>
@@ -159,19 +172,6 @@ class App extends Component {
                 </div>
               </form>
             </div>
-
-            {this.state.responses.length > 0 ? (
-              <div className="card">
-                <h2 className="masthead">Responses</h2>
-                <div className="responses">
-                  {this.state.responses.map((response, i) => (
-                    <code className="response" key={i}>
-                      {response}
-                    </code>
-                  ))}
-                </div>
-              </div>
-            ) : null}
 
             {this.state.urls.length > 0 ? (
               <div className="mbx">

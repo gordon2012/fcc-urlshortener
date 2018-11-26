@@ -122,20 +122,32 @@ app.post('/api/shorturl/new', async function(req, res) {
     return;
   }
 
-  Url.findOne()
+  // URL must not be duplicate, return existing if it is
+  let duplicate;
+  await Url.findOne({ original_url: url }, '-_id -__v', (err, doc) => {
+    if (doc) {
+      res.json(doc);
+      duplicate = true;
+    }
+  });
+  if (duplicate) {
+    return;
+  }
+
+  // All good, make a new one with highest short_url + 1
+  Url.findOne({})
     .sort('-short_url')
     .exec((err, doc) => {
-      // Get the next increment, or 1 if empty
       const next = doc ? doc.short_url + 1 : 1;
-
       const newUrl = new Url({
         original_url: url,
         short_url: next
       });
       newUrl
         .save()
-        .then(item => {
-          res.json({ success: true });
+        .then(doc => {
+          const { original_url, short_url } = doc;
+          res.json({ original_url, short_url });
         })
         .catch(err => {
           res.status(400).json({ success: false });
@@ -157,7 +169,8 @@ app.delete('/api/shorturl/delete/:id', async function(req, res) {
       res.json({ error: JSON.stringify(err) });
       return;
     }
-    res.json({ deleted: doc });
+    const { original_url, short_url } = doc;
+    res.json({ deleted: { original_url, short_url } });
   });
 });
 
