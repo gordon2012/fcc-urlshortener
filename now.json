@@ -1,0 +1,45 @@
+{
+    "name": "fcc-urlshortener",
+    "version": 2,
+
+    "env": {
+        "ATLAS_URI": "@urlshortener-atlas-uri"
+    },
+
+    "builds": [
+        { "src": ".build/server.js", "use": "@now/node-server" },
+        { "src": ".build/client.js", "use": "@now/static" }
+    ],
+
+    "routes": [
+        {
+            "src": "/api/shorturl/list",
+            "dest": "/.build/server.js",
+            "methods": ["GET"]
+        },
+        {
+            "src": "/api/shorturl/(.*)",
+            "dest": "/.build/server.js",
+            "methods": ["GET"]
+        },
+        {
+            "src": "/api/shorturl/new",
+            "dest": "/.build/server.js",
+            "methods": ["POST"]
+        },
+        {
+            "src": "/api/shorturl/delete/(.*)",
+            "dest": "/.build/server.js",
+            "methods": ["DELETE"]
+        },
+
+        {
+            "src": "/",
+            "headers": {
+                "cache-control": "s-maxage=0"
+            },
+            "dest": "/.build/server.js"
+        },
+        { "src": "/client.js", "dest": "/.build/client.js" }
+    ]
+}
