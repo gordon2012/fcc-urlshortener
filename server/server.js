@@ -7,6 +7,7 @@ import 'babel-polyfill';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 
+import { dbUrl, urlSchema, connect } from './db';
 import App from '../common/App';
 
 const app = express();
@@ -15,21 +16,6 @@ app.use(cors({ optionSuccessStatus: 200 }));
 app.use(express.static('.build/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-let Url;
-try {
-    console.log('Trying to load model.');
-    Url = mongoose.model('url');
-    console.log('Model loaded.');
-} catch (error) {
-    console.log('Model not found.');
-    const urlSchema = new mongoose.Schema({
-        original_url: String,
-        short_url: Number,
-    });
-    Url = mongoose.model('url', urlSchema);
-    console.log('Model created.');
-}
 
 app.get('/', function(req, res) {
     const script =
@@ -59,20 +45,25 @@ app.get('/', function(req, res) {
 });
 
 app.get('/api/shorturl/list', async (req, res) => {
-    console.log('!!GET /api/shorturl/list');
-    if (!Url) {
-        res.json({ loading: true });
-        return;
-    }
+    console.log('GET list');
+
+    const Url = await connect(
+        dbUrl,
+        'url',
+        urlSchema
+    );
 
     try {
         const urls = await Url.find({});
         res.json(urls);
-    } catch (err) {
-        res.json({ error: 'error getting list' });
+    } catch (e) {
+        // connection.close();
+        res.status(500).json({ error: e.message });
+        return;
     }
 });
 
+/*
 app.get('/api/shorturl/:id', async (req, res) => {
     if (!Url) {
         res.json({ loading: true });
@@ -83,12 +74,19 @@ app.get('/api/shorturl/:id', async (req, res) => {
     const doc = await Url.findOne({ short_url: id });
     res.status(301).redirect(doc.original_url);
 });
+*/
 
 app.post('/api/shorturl/new', async function(req, res) {
-    if (!Url) {
-        res.json({ loading: true });
-        return;
-    }
+    // if (!Url) {
+    //     res.json({ loading: true });
+    //     return;
+    // }
+
+    const Url = await connect(
+        dbUrl,
+        'url',
+        urlSchema
+    );
 
     const { original_url: url } = req.body;
 
@@ -162,6 +160,7 @@ app.post('/api/shorturl/new', async function(req, res) {
         });
 });
 
+/*
 app.delete('/api/shorturl/delete/:id', async function(req, res) {
     if (!Url) {
         res.json({ loading: true });
@@ -180,5 +179,8 @@ app.delete('/api/shorturl/delete/:id', async function(req, res) {
         res.json({ deleted: { original_url, short_url } });
     });
 });
+
+
+*/
 
 export default app;
