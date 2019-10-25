@@ -1,19 +1,21 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import mongoose from 'mongoose';
 import dns from 'dns';
 import 'babel-polyfill';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 
 import { dbUrl, urlSchema, connect } from './db';
-import App from '../common/App';
+import App from '../client/App';
 
 const app = express();
 
 app.use(cors({ optionSuccessStatus: 200 }));
+
 app.use(express.static('.build/public'));
+app.use(express.static('public'));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -34,6 +36,7 @@ app.get('/', function(req, res) {
                 <title>${title} | freeCodeCamp</title>
                 <meta name="description" content="">
                 <meta name="viewport" content="width=device-width,  initial-scale=1">
+                <link rel="stylesheet" type="text/css" href="/style.css" />
             </head>
             <body>
                 <div id="root">${application}</div>
@@ -45,43 +48,29 @@ app.get('/', function(req, res) {
 });
 
 app.get('/api/shorturl/list', async (req, res) => {
-    console.log('GET list');
-
     const Url = await connect(
         dbUrl,
         'url',
         urlSchema
     );
 
-    try {
-        const urls = await Url.find({});
-        res.json(urls);
-    } catch (e) {
-        // connection.close();
-        res.status(500).json({ error: e.message });
-        return;
-    }
+    const urls = await Url.find({});
+    res.json(urls);
 });
 
-/*
 app.get('/api/shorturl/:id', async (req, res) => {
-    if (!Url) {
-        res.json({ loading: true });
-        return;
-    }
+    const Url = await connect(
+        dbUrl,
+        'url',
+        urlSchema
+    );
 
     const { id } = req.params;
     const doc = await Url.findOne({ short_url: id });
     res.status(301).redirect(doc.original_url);
 });
-*/
 
 app.post('/api/shorturl/new', async function(req, res) {
-    // if (!Url) {
-    //     res.json({ loading: true });
-    //     return;
-    // }
-
     const Url = await connect(
         dbUrl,
         'url',
@@ -160,12 +149,12 @@ app.post('/api/shorturl/new', async function(req, res) {
         });
 });
 
-/*
 app.delete('/api/shorturl/delete/:id', async function(req, res) {
-    if (!Url) {
-        res.json({ loading: true });
-        return;
-    }
+    const Url = await connect(
+        dbUrl,
+        'url',
+        urlSchema
+    );
 
     const { id } = req.params;
 
@@ -179,8 +168,5 @@ app.delete('/api/shorturl/delete/:id', async function(req, res) {
         res.json({ deleted: { original_url, short_url } });
     });
 });
-
-
-*/
 
 export default app;

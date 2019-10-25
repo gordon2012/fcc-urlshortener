@@ -6,12 +6,7 @@ class App extends Component {
     updateUrls() {
         fetch(`api/shorturl/list`).then(response =>
             response.json().then(res => {
-                if (res.loading) {
-                    console.log('list: LOADING');
-                    // setTimeout(() => this.updateUrls(), 500);
-                } else {
-                    this.setState({ urls: res });
-                }
+                this.setState({ urls: res });
             })
         );
     }
@@ -59,7 +54,6 @@ class App extends Component {
     }
 
     // Handlers
-
     handleInputChange = event => {
         this.setState({ input: event.target.value });
     };
@@ -78,7 +72,6 @@ class App extends Component {
     };
 
     // Lifecycle Methods
-
     componentDidMount() {
         this.updateUrls();
     }
@@ -112,7 +105,7 @@ class App extends Component {
                                     <code>{`{"error":"invalid URL"}`}</code>.
                                     <br />
                                     HINT: to be sure that the submitted url
-                                    points to a valid site you can use the
+                                    points to a valid site. You can use the
                                     function <code>
                                         dns.lookup(host, cb)
                                     </code>{' '}
@@ -127,7 +120,7 @@ class App extends Component {
 
                             <h2 className="masthead">Example Usage</h2>
                             <code className="response">
-                                POST /api/shorturl/new{' '}
+                                POST /api/shorturl/new/
                                 <code>https://www.google.com</code>
                             </code>
                             <h2 className="masthead">Example Output</h2>
@@ -157,7 +150,7 @@ class App extends Component {
                             <form onSubmit={this.handleFormSubmit}>
                                 <code className="response">
                                     <label htmlFor="original_url">
-                                        <span>POST /api/shorturl/new</span>
+                                        <span>POST /api/shorturl/new/</span>
                                         <input
                                             type="text"
                                             placeholder=""

@@ -8,7 +8,8 @@
 
     "builds": [
         { "src": ".build/server.js", "use": "@now/node-server" },
-        { "src": ".build/client.js", "use": "@now/static" }
+        { "src": ".build/client.js", "use": "@now/static" },
+        { "src": "public/style.css", "use": "@now/static" }
     ],
 
     "routes": [
@@ -40,6 +41,7 @@
             },
             "dest": "/.build/server.js"
         },
-        { "src": "/client.js", "dest": "/.build/client.js" }
+        { "src": "/client.js", "dest": "/.build/client.js" },
+        { "src": "/style.css", "dest": "/public/style.css" }
     ]
 }
